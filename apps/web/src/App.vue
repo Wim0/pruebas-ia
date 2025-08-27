@@ -1,37 +1,135 @@
 <template>
-  <div id="app-container">
-    <header>
-      <div class="logo">
-        <svg width="32" height="32" viewBox="0 0 24 24">
-          <path
-            fill="currentColor"
-            d="M16.75 2a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 .75.75h3.5a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-.75-.75zM3.75 2a.75.75 0 0 0-.75.75v3.5c0 .414.336.75.75.75h3.5a.75.75 0 0 0 .75-.75v-3.5A.75.75 0 0 0 7.25 2zm13 13a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 .75.75h3.5a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-.75-.75zM3.75 15a.75.75 0 0 0-.75.75v3.5c0 .414.336.75.75.75h3.5a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-.75-.75zM16 8.5a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75M8.5 16a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 8.5 16m-6-7.5a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 2.5 8.5m7.5-6a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 10 2.5m-1.5 12a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75m7.5-6a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75m-6 7.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75M8.5 2.5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 8.5 2.5m6 6a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75m-6 6a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 8.5 15"></path>
-        </svg>
-        <span>Asistente IA</span>
+  <div id="app-container" :class="{ 'sidebar-expanded': !sidebarCollapsed }">
+    <SignedIn>
+      <Sidebar v-model:collapsed="sidebarCollapsed" />
+      <div class="main-content">
+        <Navbar @toggle-sidebar="toggleSidebar" />
+        <main>
+          <router-view v-slot="{ Component }">
+            <transition name="fade" mode="out-in">
+              <component :is="Component" />
+            </transition>
+          </router-view>
+        </main>
       </div>
-      <div class="user-controls">
-        <SignedOut>
-          <SignInButton />
-        </SignedOut>
-        <SignedIn>
-          <OrganizationSwitcher />
-          <UserButton afterSignOutUrl="/login" />
-        </SignedIn>
-      </div>
-    </header>
-    <main>
-      <RouterView />
-    </main>
+    </SignedIn>
+
+    <SignedOut>
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </SignedOut>
   </div>
 </template>
 
 <script setup>
-/* 
-* ---------------------------------------------------------------- 
-* ARCHIVO: apps/web/src/App.vue 
-* ---------------------------------------------------------------- * Propósito:
-El componente raíz de la aplicación. Define el layout principal * con una cabecera y un área de
-contenido donde se renderizarán las vistas. */
-import { RouterView } from "vue-router";
-import { SignedIn, SignedOut, SignInButton, UserButton, OrganizationSwitcher } from "@clerk/vue";
+/*
+ * ----------------------------------------------------------------
+ * ARCHIVO: apps/web/src/App.vue
+ * ----------------------------------------------------------------
+ * Propósito: El componente raíz de la aplicación. Define el layout principal
+ * con un sidebar, cabecera y un área de contenido donde se renderizarán las vistas.
+ */
+import { ref, onMounted, watch } from "vue";
+import { RouterView, useRouter } from "vue-router";
+import { SignedIn, SignedOut, useAuth } from "@clerk/vue";
+import Sidebar from "./components/Sidebar.vue";
+import Navbar from "./components/Navbar.vue";
+
+const sidebarCollapsed = ref(false);
+const router = useRouter();
+const { isSignedIn } = useAuth();
+
+const toggleSidebar = () => {
+  sidebarCollapsed.value = !sidebarCollapsed.value;
+};
+
+// Escuchar cambios en el estado de autenticación para redireccionar adecuadamente
+watch(
+  isSignedIn,
+  (newValue) => {
+    const currentPath = router.currentRoute.value.path;
+
+    if (newValue) {
+      // Si está autenticado y está en la página de inicio, redirigir al dashboard
+      if (currentPath === "/" || currentPath === "/login") {
+        router.push("/dashboard");
+      }
+    } else {
+      // Si no está autenticado y está en una ruta protegida, redirigir a inicio
+      if (router.currentRoute.value.meta.requiresAuth) {
+        router.push("/");
+      }
+    }
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  // Verificar estado de autenticación inicial
+  if (isSignedIn.value) {
+    const currentPath = router.currentRoute.value.path;
+    if (currentPath === "/" || currentPath === "/login") {
+      router.push("/dashboard");
+    }
+  }
+});
 </script>
+
+<style>
+#app-container {
+  display: flex;
+}
+
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar-expanded .main-content {
+  margin-left: 250px;
+}
+
+main {
+  flex-grow: 1;
+  padding: 1.5rem;
+  background-color: #f8f9fb;
+  min-height: calc(100vh - 64px);
+}
+
+/* Animaciones para transiciones entre páginas */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Estilos globales para botones y tarjetas con animaciones */
+.btn-primary,
+.btn-secondary {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+</style>

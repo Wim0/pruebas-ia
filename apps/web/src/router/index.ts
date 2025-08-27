@@ -1,52 +1,64 @@
-/*
- * ----------------------------------------------------------------
- * ARCHIVO: apps/web/src/router/index.ts
- * ----------------------------------------------------------------
- * Propósito: Define las rutas (páginas) de nuestra aplicación
- * e implementa un "guardián de navegación" para proteger las rutas privadas.
- */
 import { createRouter, createWebHistory } from "vue-router";
-import { useClerk } from "@clerk/vue";
 import DashboardView from "../views/DashboardView.vue";
 import LoginView from "../views/LoginView.vue";
+import FileUploadView from "../views/FileUploadView.vue";
+import TemplateViewerView from "../views/TemplateViewerView.vue";
+import HomeView from "../views/HomeView.vue";
+import { useAuth } from "@clerk/vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
+      name: "home",
+      component: HomeView,
+      meta: { requiresAuth: false },
+    },
+    {
+      path: "/dashboard",
       name: "dashboard",
       component: DashboardView,
-      meta: { requiresAuth: true }, // Esta ruta requiere que el usuario esté autenticado
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/upload",
+      name: "fileUpload",
+      component: FileUploadView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/template",
+      name: "templateViewer",
+      component: TemplateViewerView,
+      meta: { requiresAuth: true },
     },
     {
       path: "/login",
       name: "login",
       component: LoginView,
+      meta: { requiresAuth: false },
     },
   ],
 });
 
-// Guardián de navegación: se ejecuta antes de cada cambio de ruta
-router.beforeEach(async (to) => {
-  if (!window.Clerk) {
-    if (to.meta.requiresAuth) {
-      return { name: "login" };
-    }
-    return true;
+// Proteger rutas que requieren autenticación
+router.beforeEach((to, from) => {
+  const { isSignedIn } = useAuth();
+
+  // Si la ruta requiere autenticación y el usuario no está autenticado
+  if (to.meta.requiresAuth && !isSignedIn.value) {
+    return {
+      path: "/",
+    };
   }
 
-  const isSignedIn = window.Clerk.isSignedIn;
-
-  if (to.name === "login" && isSignedIn) {
-    return { name: "dashboard" };
+  // Si el usuario está autenticado e intenta acceder a la página de inicio o login
+  if (isSignedIn.value && (to.path === "/" || to.path === "/login")) {
+    return {
+      path: "/dashboard",
+    };
   }
-
-  if (to.meta.requiresAuth && !isSignedIn) {
-    return { name: "login" };
-  }
-
-  return true;
 });
 
 export default router;

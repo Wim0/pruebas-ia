@@ -1,9 +1,9 @@
 <template>
   <div class="login-container">
     <div class="login-box">
-      <h1>Bienvenido a tu Asistente IA</h1>
+      <h1>Bienvenido a tu AuditEase</h1>
       <p>Inicia sesión para comenzar a optimizar tu documentación.</p>
-      <SignIn routing="path" :after-sign-in-url="'/'" />
+      <SignIn routing="path" :after-sign-in-url="'/dashboard'" />
     </div>
   </div>
 </template>
@@ -16,27 +16,7 @@
  * Propósito: La página de inicio de sesión. Muestra el componente
  * de Clerk para que el usuario pueda autenticarse.
  */
-import { SignIn, useClerk, useUser } from "@clerk/vue";
-import { onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
-
-const router = useRouter();
-const { isSignedIn } = useUser();
-const { session } = useClerk();
-
-// Comprobar si ya está autenticado cuando se monta el componente
-onMounted(() => {
-  if (isSignedIn) {
-    router.replace("/");
-  }
-});
-
-// Observar cambios en el estado de autenticación
-watch(isSignedIn, (newValue) => {
-  if (newValue === true) {
-    router.replace("/");
-  }
-});
+import { SignIn } from "@clerk/vue";
 </script>
 
 <style scoped>
