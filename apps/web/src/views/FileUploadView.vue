@@ -14,7 +14,7 @@
         la plantilla ISO 27001.
       </p>
 
-      <FileUpload />
+      <FileUpload @upload-success="onUploadSuccess" />
     </div>
 
     <div class="documents-section card">
@@ -52,12 +52,17 @@
             <h3>{{ doc.name }}</h3>
             <p>{{ formatDate(doc.uploadDate) }} • {{ formatSize(doc.size) }}</p>
           </div>
-          <button class="btn-icon" @click="deleteDocument(doc.id)" title="Eliminar documento">
-            <svg width="20" height="20" viewBox="0 0 24 24">
+          <button
+            class="btn-icon"
+            @click="deleteDocument(doc.id)"
+            title="Eliminar documento"
+            :disabled="deleting === doc.id">
+            <svg v-if="deleting !== doc.id" width="20" height="20" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
                 d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
             </svg>
+            <div v-else class="delete-spinner"></div>
           </button>
         </div>
       </div>
@@ -69,68 +74,43 @@
 import { ref, onMounted } from "vue";
 import FileUpload from "../components/FileUpload.vue";
 import axios from "axios";
-import { useAuth } from "@clerk/vue";
 
-const { getToken } = useAuth();
 const documents = ref([]);
 const loading = ref(true);
+const deleting = ref(null);
 
 // Función para cargar la lista de documentos
 const loadDocuments = async () => {
   loading.value = true;
   try {
-    const token = await getToken();
-    // Esta sería tu ruta real para obtener documentos
-    const response = await axios.get("/api/files/list", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get("/api/files/list");
     documents.value = response.data.files || [];
   } catch (error) {
     console.error("Error al cargar documentos:", error);
-    // Para propósitos de demostración, vamos a simular algunos documentos
-    documents.value = [
-      {
-        id: "1",
-        name: "Política de Seguridad.pdf",
-        size: 1500000,
-        uploadDate: new Date(2023, 5, 15),
-      },
-      {
-        id: "2",
-        name: "Manual de Procedimientos.pdf",
-        size: 2300000,
-        uploadDate: new Date(2023, 5, 18),
-      },
-      {
-        id: "3",
-        name: "Análisis de Riesgos.pdf",
-        size: 1800000,
-        uploadDate: new Date(2023, 5, 20),
-      },
-    ];
+    documents.value = [];
   } finally {
     loading.value = false;
   }
+};
+
+// Función para manejar subida exitosa
+const onUploadSuccess = (newFile) => {
+  documents.value.unshift(newFile);
 };
 
 // Función para eliminar un documento
 const deleteDocument = async (id) => {
   if (!confirm("¿Estás seguro de querer eliminar este documento?")) return;
 
+  deleting.value = id;
   try {
-    const token = await getToken();
-    // Esta sería tu ruta real para eliminar documentos
-    await axios.delete(`/api/files/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    await axios.delete(`/api/files/${encodeURIComponent(id)}`);
     documents.value = documents.value.filter((doc) => doc.id !== id);
   } catch (error) {
     console.error("Error al eliminar documento:", error);
     alert("Error al eliminar el documento.");
+  } finally {
+    deleting.value = null;
   }
 };
 
@@ -296,5 +276,19 @@ onMounted(() => {
 .btn-icon:hover {
   background-color: rgba(231, 76, 60, 0.1);
   color: #e74c3c;
+}
+
+.btn-icon:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.delete-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #e74c3c;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 </style>
