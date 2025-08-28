@@ -46,6 +46,67 @@ let AwsService = AwsService_1 = class AwsService {
         await this.s3Client.send(command);
         return `s3://${bucketName}/${fileName}`;
     }
+    async uploadFile(fileName, fileBuffer) {
+        const bucketName = this.configService.getOrThrow('AWS_S3_BUCKET_NAME');
+        this.logger.log(`Uploading ${fileName} to bucket ${bucketName}`);
+        const command = new client_s3_1.PutObjectCommand({
+            Bucket: bucketName,
+            Key: fileName,
+            Body: fileBuffer,
+            ContentType: 'application/pdf',
+        });
+        await this.s3Client.send(command);
+        return `s3://${bucketName}/${fileName}`;
+    }
+    async listUserFiles(userId) {
+        const bucketName = this.configService.getOrThrow('AWS_S3_BUCKET_NAME');
+        const command = new client_s3_1.ListObjectsV2Command({
+            Bucket: bucketName,
+            Prefix: `${userId}/`,
+        });
+        const response = await this.s3Client.send(command);
+        if (!response.Contents) {
+            return [];
+        }
+        const files = await Promise.all(response.Contents.map((object) => {
+            const key = object.Key || '';
+            return {
+                id: key,
+                name: key.split('/').pop() || key,
+                size: object.Size || 0,
+                uploadDate: object.LastModified || new Date(),
+            };
+        }));
+        return files;
+    }
+    async listAllFiles() {
+        const bucketName = this.configService.getOrThrow('AWS_S3_BUCKET_NAME');
+        const command = new client_s3_1.ListObjectsV2Command({
+            Bucket: bucketName,
+            Prefix: 'uploads/',
+        });
+        const response = await this.s3Client.send(command);
+        if (!response.Contents) {
+            return [];
+        }
+        const files = response.Contents.map((object) => {
+            const key = object.Key || '';
+            return {
+                id: key,
+                name: key.split('/').pop() || key,
+                size: object.Size || 0,
+                uploadDate: object.LastModified || new Date(),
+            };
+        });
+        return files;
+    }
+    async deleteFile(fileName) {
+        const bucketName = this.configService.getOrThrow('AWS_S3_BUCKET_NAME');
+        await this.s3Client.send(new client_s3_1.DeleteObjectCommand({
+            Bucket: bucketName,
+            Key: fileName,
+        }));
+    }
     async retrieveAndGenerate(prompt) {
         const knowledgeBaseId = this.configService.get('BEDROCK_KNOWLEDGE_BASE_ID');
         const modelArn = this.configService.get('BEDROCK_MODEL_ARN');

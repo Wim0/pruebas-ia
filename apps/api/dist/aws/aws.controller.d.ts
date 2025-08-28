@@ -5,6 +5,22 @@ export declare class AwsController {
     constructor(awsService: AwsService);
     uploadDocument(file: Express.Multer.File): Promise<{
         message: string;
-        fileUrl: string;
+        file: {
+            id: string;
+            name: string;
+            size: number;
+            uploadDate: Date;
+        };
+    }>;
+    listDocuments(): Promise<{
+        files: {
+            id: string;
+            name: string;
+            size: number;
+            uploadDate: Date;
+        }[];
+    }>;
+    deleteDocument(fileId: string): Promise<{
+        message: string;
     }>;
 }

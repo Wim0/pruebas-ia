@@ -7,7 +7,12 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  ListObjectsV2Command,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import {
   BedrockAgentRuntimeClient,
   RetrieveAndGenerateCommand,
@@ -49,6 +54,91 @@ export class AwsService {
 
     await this.s3Client.send(command);
     return `s3://${bucketName}/${fileName}`;
+  }
+
+  // Agregar este método que coincida con el controlador
+  async uploadFile(fileName: string, fileBuffer: Buffer): Promise<string> {
+    const bucketName =
+      this.configService.getOrThrow<string>('AWS_S3_BUCKET_NAME');
+    this.logger.log(`Uploading ${fileName} to bucket ${bucketName}`);
+
+    const command = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: fileName,
+      Body: fileBuffer,
+      ContentType: 'application/pdf',
+    });
+
+    await this.s3Client.send(command);
+    return `s3://${bucketName}/${fileName}`;
+  }
+
+  // También usar ConfigService en lugar de process.env para consistencia
+  async listUserFiles(userId: string) {
+    const bucketName =
+      this.configService.getOrThrow<string>('AWS_S3_BUCKET_NAME');
+    const command = new ListObjectsV2Command({
+      Bucket: bucketName,
+      Prefix: `${userId}/`,
+    });
+
+    const response = await this.s3Client.send(command);
+
+    if (!response.Contents) {
+      return [];
+    }
+
+    const files = await Promise.all(
+      response.Contents.map((object) => {
+        const key = object.Key || '';
+        return {
+          id: key,
+          name: key.split('/').pop() || key,
+          size: object.Size || 0,
+          uploadDate: object.LastModified || new Date(),
+        };
+      }),
+    );
+
+    return files;
+  }
+
+  async listAllFiles() {
+    const bucketName =
+      this.configService.getOrThrow<string>('AWS_S3_BUCKET_NAME');
+    const command = new ListObjectsV2Command({
+      Bucket: bucketName,
+      Prefix: 'uploads/', // Solo archivos en la carpeta uploads
+    });
+
+    const response = await this.s3Client.send(command);
+
+    if (!response.Contents) {
+      return [];
+    }
+
+    const files = response.Contents.map((object) => {
+      const key = object.Key || '';
+      return {
+        id: key,
+        name: key.split('/').pop() || key,
+        size: object.Size || 0,
+        uploadDate: object.LastModified || new Date(),
+      };
+    });
+
+    return files;
+  }
+
+  async deleteFile(fileName: string) {
+    const bucketName =
+      this.configService.getOrThrow<string>('AWS_S3_BUCKET_NAME');
+    await this.s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: fileName,
+      }),
+    );
   }
 
   async retrieveAndGenerate(prompt: string): Promise<string> {

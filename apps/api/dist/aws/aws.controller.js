@@ -16,8 +16,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AwsController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
-const auth_guard_1 = require("../auth/auth.guard");
-const roles_decorator_1 = require("../auth/roles.decorator");
 const aws_service_1 = require("./aws.service");
 let AwsController = AwsController_1 = class AwsController {
     awsService;
@@ -27,17 +25,35 @@ let AwsController = AwsController_1 = class AwsController {
     }
     async uploadDocument(file) {
         this.logger.log(`Received file: ${file.originalname} for S3 upload.`);
-        const fileUrl = await this.awsService.uploadFileToS3(file);
+        const fileName = `uploads/${Date.now()}-${file.originalname}`;
+        await this.awsService.uploadFile(fileName, file.buffer);
         return {
-            message: 'Archivo subido a S3. Recuerda sincronizar la Base de Conocimiento en la consola de AWS para que la IA lo utilice.',
-            fileUrl: fileUrl,
+            message: 'Archivo subido a S3 correctamente.',
+            file: {
+                id: fileName,
+                name: file.originalname,
+                size: file.size,
+                uploadDate: new Date(),
+            },
+        };
+    }
+    async listDocuments() {
+        const files = await this.awsService.listAllFiles();
+        return {
+            files: files,
+        };
+    }
+    async deleteDocument(fileId) {
+        const decodedFileId = decodeURIComponent(fileId);
+        await this.awsService.deleteFile(decodedFileId);
+        return {
+            message: 'Archivo eliminado correctamente',
         };
     }
 };
 exports.AwsController = AwsController;
 __decorate([
     (0, common_1.Post)('upload'),
-    (0, roles_decorator_1.Roles)('cliente'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
     __param(0, (0, common_1.UploadedFile)(new common_1.ParseFilePipe({
         validators: [
@@ -49,9 +65,21 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AwsController.prototype, "uploadDocument", null);
+__decorate([
+    (0, common_1.Get)('list'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AwsController.prototype, "listDocuments", null);
+__decorate([
+    (0, common_1.Delete)(':fileId'),
+    __param(0, (0, common_1.Param)('fileId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AwsController.prototype, "deleteDocument", null);
 exports.AwsController = AwsController = AwsController_1 = __decorate([
     (0, common_1.Controller)('files'),
-    (0, common_1.UseGuards)(auth_guard_1.ClerkAuthGuard),
     __metadata("design:paramtypes", [aws_service_1.AwsService])
 ], AwsController);
 //# sourceMappingURL=aws.controller.js.map
