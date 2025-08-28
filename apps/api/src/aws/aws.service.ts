@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   S3Client,
   PutObjectCommand,
-  ListObjectsV2Command,
+  ListObjectsV2Command, // ✅ Asegúrate de tener esta
   DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import {
@@ -106,28 +106,54 @@ export class AwsService {
   async listAllFiles() {
     const bucketName =
       this.configService.getOrThrow<string>('AWS_S3_BUCKET_NAME');
+    this.logger.log(
+      `Listing files from bucket: ${bucketName} with prefix: uploads/`,
+    );
+
+    // Agregar debug de configuración
+    const region = this.configService.getOrThrow<string>('AWS_REGION');
+    this.logger.log(`Using AWS region: ${region}`);
+    this.logger.log(`Using bucket: ${bucketName}`);
+
     const command = new ListObjectsV2Command({
       Bucket: bucketName,
       Prefix: 'uploads/', // Solo archivos en la carpeta uploads
     });
 
-    const response = await this.s3Client.send(command);
+    try {
+      const response = await this.s3Client.send(command);
+      this.logger.log(`Found ${response.Contents?.length || 0} files in S3`);
 
-    if (!response.Contents) {
-      return [];
+      if (!response.Contents) {
+        return [];
+      }
+
+      const files = response.Contents.map((object) => {
+        const key = object.Key || '';
+        return {
+          id: key,
+          name: key.split('/').pop() || key,
+          size: object.Size || 0,
+          uploadDate: object.LastModified || new Date(),
+        };
+      });
+
+      return files;
+    } catch (error) {
+      // ✅ Agregar más detalle del error
+      this.logger.error('Error listing files from S3:', {
+        errorMessage: error.message,
+        errorCode: error.code,
+        errorName: error.name,
+        bucket: bucketName,
+        region: region,
+      });
+
+      // ✅ También hacer log del error completo para debugging
+      console.error('Full S3 Error:', error);
+
+      throw new Error(`Failed to list files from S3: ${error.message}`);
     }
-
-    const files = response.Contents.map((object) => {
-      const key = object.Key || '';
-      return {
-        id: key,
-        name: key.split('/').pop() || key,
-        size: object.Size || 0,
-        uploadDate: object.LastModified || new Date(),
-      };
-    });
-
-    return files;
   }
 
   async deleteFile(fileName: string) {
