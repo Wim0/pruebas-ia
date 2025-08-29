@@ -8,6 +8,7 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from './database/database.module';
 import { AwsModule } from './aws/aws.module';
 import { SuggestionsModule } from './suggestions/suggestions.module';
 import { TemplatesModule } from './templates/templates.module';
@@ -17,6 +18,8 @@ import { TestBedrockController } from './test-bedrock.controller';
   imports: [
     // Hace que las variables de entorno estén disponibles en toda la app
     ConfigModule.forRoot({ isGlobal: true }),
+    // Configuración de base de datos
+    DatabaseModule,
     AwsModule,
     SuggestionsModule,
     TemplatesModule,

@@ -15,7 +15,7 @@ export default defineConfig({
       "/api": {
         target: "http://localhost:3000", // El puerto de API NestJS
         changeOrigin: true, // Necesario para el proxy
-        rewrite: (path) => path.replace(/^\/api/, ""), // Elimina /api de la ruta final
+        // No reescribir la ruta para mantener el prefijo /api
       },
     },
   },

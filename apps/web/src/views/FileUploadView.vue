@@ -74,10 +74,14 @@
 import { ref, onMounted } from "vue";
 import FileUpload from "../components/FileUpload.vue";
 import axios from "axios";
+import { useTemplateProgress } from "../composables/useTemplateProgress.js";
 
 const documents = ref([]);
 const loading = ref(true);
 const deleting = ref(null);
+
+// Usar el composable para mantener actualizado el contador global
+const { updateDocumentsCount } = useTemplateProgress();
 
 // Función para cargar la lista de documentos
 const loadDocuments = async () => {
@@ -85,6 +89,8 @@ const loadDocuments = async () => {
   try {
     const response = await axios.get("/api/files/list");
     documents.value = response.data.files || [];
+    // Actualizar también el contador global
+    await updateDocumentsCount();
   } catch (error) {
     console.error("Error al cargar documentos:", error);
     documents.value = [];
@@ -96,6 +102,8 @@ const loadDocuments = async () => {
 // Función para manejar subida exitosa
 const onUploadSuccess = (newFile) => {
   documents.value.unshift(newFile);
+  // Actualizar el contador global después de subir un archivo
+  updateDocumentsCount();
 };
 
 // Función para eliminar un documento
@@ -106,6 +114,8 @@ const deleteDocument = async (id) => {
   try {
     await axios.delete(`/api/files/${encodeURIComponent(id)}`);
     documents.value = documents.value.filter((doc) => doc.id !== id);
+    // Actualizar el contador global después de eliminar un archivo
+    await updateDocumentsCount();
   } catch (error) {
     console.error("Error al eliminar documento:", error);
     alert("Error al eliminar el documento.");
