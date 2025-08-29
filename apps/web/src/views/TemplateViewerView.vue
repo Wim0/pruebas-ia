@@ -66,6 +66,7 @@
 import { ref } from "vue";
 import TemplateViewer from "../components/TemplateViewer.vue";
 import { useTemplateProgress } from "../composables/useTemplateProgress.js";
+import { $confirm, $success } from "../composables/useModal.js";
 
 const templateViewerRef = ref(null);
 const { resetAllProgress } = useTemplateProgress();
@@ -78,8 +79,18 @@ const downloadTemplate = () => {
 };
 
 // Función para reiniciar todo el progreso
-const resetProgress = () => {
-  if (confirm("¿Estás seguro de que quieres reiniciar todo el progreso? Esta acción no se puede deshacer.")) {
+const resetProgress = async () => {
+  const confirmed = await $confirm(
+    "¿Estás seguro de que quieres reiniciar todo el progreso? Esta acción no se puede deshacer.",
+    {
+      title: "Confirmar Reinicio",
+      type: "warning",
+      confirmText: "Sí, reiniciar",
+      cancelText: "Cancelar"
+    }
+  );
+
+  if (confirmed) {
     // Reiniciar el progreso
     resetAllProgress();
     
@@ -90,7 +101,10 @@ const resetProgress = () => {
       }, 100);
     }
     
-    alert("El progreso ha sido reiniciado completamente.");
+    $success("El progreso ha sido reiniciado completamente.", {
+      title: "Progreso Reiniciado",
+      confirmText: "Entendido"
+    });
   }
 };
 </script>

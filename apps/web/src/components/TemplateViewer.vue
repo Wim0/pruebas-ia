@@ -19,6 +19,7 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useTemplateProgress } from "../composables/useTemplateProgress.js";
+import { $error } from "../composables/useModal.js";
 
 const templateHtml = ref("");
 const loadingTemplate = ref(true);
@@ -241,7 +242,10 @@ const handleFieldClick = async (event) => {
       errorMessage += ` Status: ${error.response.status}. ${error.response.data?.message || ""}`;
     }
 
-    alert(errorMessage);
+    $error(errorMessage, {
+      title: "Error de Inteligencia Artificial",
+      confirmText: "Entendido"
+    });
     console.error(error);
   } finally {
     field.dataset.loading = "false";

@@ -21,6 +21,21 @@
         </transition>
       </router-view>
     </SignedOut>
+
+    <!-- Modal Global -->
+    <Modal
+      :show="modalState.isOpen"
+      :title="modalState.title"
+      :message="modalState.message"
+      :type="modalState.type"
+      :show-cancel="modalState.showCancel"
+      :confirm-text="modalState.confirmText"
+      :cancel-text="modalState.cancelText"
+      :show-close-button="modalState.showCloseButton"
+      :close-on-overlay="modalState.closeOnOverlay"
+      @confirm="confirmModal"
+      @cancel="cancelModal"
+      @close="closeModal" />
   </div>
 </template>
 
@@ -37,10 +52,13 @@ import { RouterView, useRouter } from "vue-router";
 import { SignedIn, SignedOut, useAuth } from "@clerk/vue";
 import Sidebar from "./components/Sidebar.vue";
 import Navbar from "./components/Navbar.vue";
+import Modal from "./components/Modal.vue";
+import { useModal } from "./composables/useModal.js";
 
 const sidebarCollapsed = ref(false);
 const router = useRouter();
 const { isSignedIn } = useAuth();
+const { modalState, closeModal, confirmModal, cancelModal } = useModal();
 
 const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value;
