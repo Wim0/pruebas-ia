@@ -40,8 +40,9 @@ INSTRUCCIONES:
 
 RESPONDE ÚNICAMENTE CON EL CONTENIDO SOLICITADO:`;
 
-    const suggestion = await this.awsService.retrieveAndGenerate(promptTemplate);
-    
+    const suggestion =
+      await this.awsService.retrieveAndGenerate(promptTemplate);
+
     // Guardar automáticamente el campo en la base de datos
     try {
       await this.templatesService.saveTemplateField({

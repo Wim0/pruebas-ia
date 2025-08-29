@@ -173,13 +173,15 @@ onMounted(async () => {
 // Función para actualizar visualmente los campos completados
 const updateCompletedFieldsVisually = async () => {
   const fillableFields = document.querySelectorAll(".fillable-field");
-  
+
   for (const field of fillableFields) {
     const fieldContext = field.getAttribute("data-context");
     if (fieldContext && isFieldCompleted(fieldContext)) {
       // Cargar el contenido desde la API
       try {
-        const response = await axios.get(`/api/templates/fields/context/${encodeURIComponent(fieldContext)}`);
+        const response = await axios.get(
+          `/api/templates/fields/context/${encodeURIComponent(fieldContext)}`
+        );
         if (response.data && response.data.success && response.data.data) {
           // Actualizar el contenido del campo con el texto guardado
           field.innerHTML = response.data.data.fieldContent.replace(/\n/g, "<br>");
@@ -187,7 +189,7 @@ const updateCompletedFieldsVisually = async () => {
       } catch (error) {
         console.warn(`No se pudo cargar el contenido para el campo: ${fieldContext}`, error);
       }
-      
+
       // Aplicar estilos de campo completado
       field.style.borderColor = "#28a745";
       field.style.backgroundColor = "#f8fff9";
@@ -221,7 +223,7 @@ const handleFieldClick = async (event) => {
     // Reemplazamos el contenido y los saltos de línea por <br> para HTML
     field.innerHTML = response.data.suggestion.replace(/\n/g, "<br>");
 
-    // NO llamar a markFieldCompleted aquí porque el servicio de sugerencias 
+    // NO llamar a markFieldCompleted aquí porque el servicio de sugerencias
     // ya guarda automáticamente el campo en la base de datos
     // markFieldCompleted(fieldContext); // ← REMOVIDO
 

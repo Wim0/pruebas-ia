@@ -90,7 +90,7 @@
 
 <script setup>
 import { useUser } from "@clerk/vue";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { RouterLink } from "vue-router";
 import DashboardStats from "../components/DashboardStats.vue";
 import ProgressIndicator from "../components/ProgressIndicator.vue";
@@ -116,9 +116,25 @@ const {
 // Calcular porcentaje de completado usando datos reales
 const overallCompletion = computed(() => overallProgress.value.percentage);
 
+// Función para manejar cuando la página se vuelve visible
+const handleVisibilityChange = () => {
+  if (document.visibilityState === "visible") {
+    // Actualizar contador cuando el usuario regresa a la pestaña
+    updateDocumentsCount();
+  }
+};
+
 onMounted(async () => {
   // Cargar el número real de documentos subidos
   await updateDocumentsCount();
+
+  // Agregar listener para cuando el usuario regrese a la pestaña
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+});
+
+onUnmounted(() => {
+  // Limpiar el listener
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
 });
 </script>
 

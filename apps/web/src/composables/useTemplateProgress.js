@@ -12,10 +12,7 @@ import axios from "axios";
 const templateProgress = reactive({
   completedFields: new Set(),
   fieldsBySection: {
-    "Introducción": [
-      "nombre de la organización",
-      "propósito de la política de seguridad",
-    ],
+    Introducción: ["nombre de la organización", "propósito de la política de seguridad"],
     "A.5": [
       "políticas específicas de seguridad de la información",
       "proceso de revisión de políticas de seguridad",
@@ -34,23 +31,11 @@ const templateProgress = reactive({
       "esquema de clasificación de información",
       "procedimientos de manejo de medios",
     ],
-    "Aplicabilidad": [
-      "alcance y aplicabilidad de la política",
-    ],
-    "Responsabilidades": [
-      "roles y responsabilidades específicas",
-    ],
-    "Cumplimiento": [
-      "mecanismos de cumplimiento y monitoreo",
-    ],
-    "Revisión": [
-      "criterios para revisión de la política",
-    ],
-    "Aprobación": [
-      "fecha de aprobación",
-      "autoridad que aprueba",
-      "fecha de próxima revisión",
-    ],
+    Aplicabilidad: ["alcance y aplicabilidad de la política"],
+    Responsabilidades: ["roles y responsabilidades específicas"],
+    Cumplimiento: ["mecanismos de cumplimiento y monitoreo"],
+    Revisión: ["criterios para revisión de la política"],
+    Aprobación: ["fecha de aprobación", "autoridad que aprueba", "fecha de próxima revisión"],
   },
 });
 
@@ -66,7 +51,7 @@ export function useTemplateProgress() {
         // Limpiar el conjunto actual
         templateProgress.completedFields.clear();
         // Agregar los campos completados desde la base de datos
-        response.data.data.forEach(field => {
+        response.data.data.forEach((field) => {
           if (field.isCompleted) {
             templateProgress.completedFields.add(field.fieldContext);
           }
@@ -82,14 +67,14 @@ export function useTemplateProgress() {
   // Marcar un campo como completado
   const markFieldCompleted = async (fieldContext) => {
     templateProgress.completedFields.add(fieldContext);
-    
+
     // Guardar en la base de datos
     try {
       await axios.post("/api/templates/fields", {
         fieldContext,
         fieldContent: "", // Se llenará cuando se genere contenido
         templateType: "iso27001",
-        isCompleted: true
+        isCompleted: true,
       });
     } catch (error) {
       console.error("Error saving progress to API:", error);
@@ -101,13 +86,15 @@ export function useTemplateProgress() {
   // Desmarcar un campo como completado
   const markFieldIncomplete = async (fieldContext) => {
     templateProgress.completedFields.delete(fieldContext);
-    
+
     // Actualizar en la base de datos
     try {
-      const response = await axios.get(`/api/templates/fields/context/${encodeURIComponent(fieldContext)}`);
+      const response = await axios.get(
+        `/api/templates/fields/context/${encodeURIComponent(fieldContext)}`
+      );
       if (response.data && response.data.data) {
         await axios.put(`/api/templates/fields/${response.data.data.id}`, {
-          isCompleted: false
+          isCompleted: false,
         });
       }
     } catch (error) {
@@ -346,10 +333,14 @@ export function useTemplateProgress() {
       const response = await fetch("/api/files/list");
       if (response.ok) {
         const data = await response.json();
-        documentsUploaded.value = data.files?.length || 0;
+        const newCount = data.files?.length || 0;
+        documentsUploaded.value = newCount;
+        console.log(`Documentos actualizados: ${newCount}`);
+        return newCount;
       }
     } catch (error) {
       console.error("Error loading documents count:", error);
+      return 0;
     }
   };
 

@@ -9,7 +9,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { TemplateField } from '../entities/template-field.entity';
-import { CreateTemplateFieldDto, UpdateTemplateFieldDto } from './dto/template-field.dto';
+import {
+  CreateTemplateFieldDto,
+  UpdateTemplateFieldDto,
+} from './dto/template-field.dto';
 
 @Injectable()
 export class TemplatesService {
@@ -149,7 +152,9 @@ export class TemplatesService {
   }
 
   // Guardar un campo completado
-  async saveTemplateField(createTemplateFieldDto: CreateTemplateFieldDto): Promise<TemplateField> {
+  async saveTemplateField(
+    createTemplateFieldDto: CreateTemplateFieldDto,
+  ): Promise<TemplateField> {
     // Verificar si ya existe el campo para este contexto y usuario
     const whereCondition: any = {
       fieldContext: createTemplateFieldDto.fieldContext,
@@ -174,13 +179,18 @@ export class TemplatesService {
       return await this.templateFieldRepository.save(existingField);
     } else {
       // Crear nuevo campo
-      const templateField = this.templateFieldRepository.create(createTemplateFieldDto);
+      const templateField = this.templateFieldRepository.create(
+        createTemplateFieldDto,
+      );
       return await this.templateFieldRepository.save(templateField);
     }
   }
 
   // Obtener todos los campos completados para un usuario
-  async getTemplateFields(userId?: string, templateType: string = 'iso27001'): Promise<TemplateField[]> {
+  async getTemplateFields(
+    userId?: string,
+    templateType: string = 'iso27001',
+  ): Promise<TemplateField[]> {
     const whereCondition: any = {
       templateType,
     };
@@ -204,7 +214,7 @@ export class TemplatesService {
   async getTemplateFieldByContext(
     fieldContext: string,
     userId?: string,
-    templateType: string = 'iso27001'
+    templateType: string = 'iso27001',
   ): Promise<TemplateField | null> {
     const whereCondition: any = {
       fieldContext,
@@ -226,7 +236,7 @@ export class TemplatesService {
   // Actualizar un campo
   async updateTemplateField(
     id: string,
-    updateTemplateFieldDto: UpdateTemplateFieldDto
+    updateTemplateFieldDto: UpdateTemplateFieldDto,
   ): Promise<TemplateField | null> {
     await this.templateFieldRepository.update(id, updateTemplateFieldDto);
     return await this.templateFieldRepository.findOne({ where: { id } });
@@ -238,7 +248,10 @@ export class TemplatesService {
   }
 
   // Eliminar todos los campos de un usuario (para reiniciar progreso)
-  async deleteAllTemplateFields(userId?: string, templateType: string = 'iso27001'): Promise<void> {
+  async deleteAllTemplateFields(
+    userId?: string,
+    templateType: string = 'iso27001',
+  ): Promise<void> {
     const whereCondition: any = {
       templateType,
     };

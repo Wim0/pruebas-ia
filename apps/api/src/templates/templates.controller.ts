@@ -4,21 +4,24 @@
  * ----------------------------------------------------------------
  * Propósito: Endpoints para plantillas y persistencia de campos completados.
  */
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Delete, 
-  Body, 
-  Param, 
-  Query, 
-  UseGuards 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ClerkAuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { TemplatesService } from './templates.service';
-import { CreateTemplateFieldDto, UpdateTemplateFieldDto } from './dto/template-field.dto';
+import {
+  CreateTemplateFieldDto,
+  UpdateTemplateFieldDto,
+} from './dto/template-field.dto';
 
 @Controller('templates')
 // @UseGuards(ClerkAuthGuard) // Comentado temporalmente para pruebas
@@ -35,8 +38,12 @@ export class TemplatesController {
 
   // Guardar un campo completado
   @Post('fields')
-  async saveTemplateField(@Body() createTemplateFieldDto: CreateTemplateFieldDto) {
-    const templateField = await this.templatesService.saveTemplateField(createTemplateFieldDto);
+  async saveTemplateField(
+    @Body() createTemplateFieldDto: CreateTemplateFieldDto,
+  ) {
+    const templateField = await this.templatesService.saveTemplateField(
+      createTemplateFieldDto,
+    );
     return {
       success: true,
       message: 'Campo guardado exitosamente',
@@ -48,9 +55,12 @@ export class TemplatesController {
   @Get('fields')
   async getTemplateFields(
     @Query('userId') userId?: string,
-    @Query('templateType') templateType: string = 'iso27001'
+    @Query('templateType') templateType: string = 'iso27001',
   ) {
-    const fields = await this.templatesService.getTemplateFields(userId, templateType);
+    const fields = await this.templatesService.getTemplateFields(
+      userId,
+      templateType,
+    );
     return {
       success: true,
       data: fields,
@@ -62,12 +72,12 @@ export class TemplatesController {
   async getTemplateFieldByContext(
     @Param('fieldContext') fieldContext: string,
     @Query('userId') userId?: string,
-    @Query('templateType') templateType: string = 'iso27001'
+    @Query('templateType') templateType: string = 'iso27001',
   ) {
     const field = await this.templatesService.getTemplateFieldByContext(
-      fieldContext, 
-      userId, 
-      templateType
+      fieldContext,
+      userId,
+      templateType,
     );
     return {
       success: true,
@@ -79,9 +89,12 @@ export class TemplatesController {
   @Put('fields/:id')
   async updateTemplateField(
     @Param('id') id: string,
-    @Body() updateTemplateFieldDto: UpdateTemplateFieldDto
+    @Body() updateTemplateFieldDto: UpdateTemplateFieldDto,
   ) {
-    const templateField = await this.templatesService.updateTemplateField(id, updateTemplateFieldDto);
+    const templateField = await this.templatesService.updateTemplateField(
+      id,
+      updateTemplateFieldDto,
+    );
     return {
       success: true,
       message: 'Campo actualizado exitosamente',
@@ -103,7 +116,7 @@ export class TemplatesController {
   @Delete('fields')
   async deleteAllTemplateFields(
     @Query('userId') userId?: string,
-    @Query('templateType') templateType: string = 'iso27001'
+    @Query('templateType') templateType: string = 'iso27001',
   ) {
     await this.templatesService.deleteAllTemplateFields(userId, templateType);
     return {
