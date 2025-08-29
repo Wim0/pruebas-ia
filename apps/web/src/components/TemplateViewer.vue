@@ -175,10 +175,7 @@ const handleFieldClick = async (event) => {
 
   try {
     console.log("Enviando petición con contexto:", fieldContext);
-    const response = await axios.post(
-      "/api/suggestions/generate",
-      { context: fieldContext }
-    );
+    const response = await axios.post("/api/suggestions/generate", { context: fieldContext });
     console.log("Respuesta recibida:", response.data);
     // Reemplazamos el contenido y los saltos de línea por <br> para HTML
     field.innerHTML = response.data.suggestion.replace(/\n/g, "<br>");
@@ -202,25 +199,30 @@ const handleFieldClick = async (event) => {
 
 const downloadPDF = () => {
   // Crear una nueva ventana con el contenido para impresión
-  const printWindow = window.open('', '_blank');
-  
+  const printWindow = window.open("", "_blank");
+
   // Obtener el contenido actual del template (sin los elementos interactivos)
-  const templateContent = document.querySelector('.template-content').cloneNode(true);
-  
+  const templateContent = document.querySelector(".template-content").cloneNode(true);
+
   // Remover elementos interactivos y reemplazar con contenido estático
-  const fillableFields = templateContent.querySelectorAll('.fillable-field');
-  fillableFields.forEach(field => {
-    field.style.border = 'none';
-    field.style.backgroundColor = 'transparent';
-    field.style.cursor = 'default';
-    field.classList.remove('fillable-field');
-    
+  const fillableFields = templateContent.querySelectorAll(".fillable-field");
+  fillableFields.forEach((field) => {
+    field.style.border = "none";
+    field.style.backgroundColor = "transparent";
+    field.style.cursor = "default";
+    field.classList.remove("fillable-field");
+
     // Si el campo está vacío o tiene texto de placeholder, poner contenido por defecto
-    if (field.innerHTML.includes('Haga clic aquí') || field.innerHTML.includes('Describa') || field.innerHTML.includes('Defina') || field.innerHTML.includes('Establezca')) {
-      field.innerHTML = '[PENDIENTE DE COMPLETAR]';
+    if (
+      field.innerHTML.includes("Haga clic aquí") ||
+      field.innerHTML.includes("Describa") ||
+      field.innerHTML.includes("Defina") ||
+      field.innerHTML.includes("Establezca")
+    ) {
+      field.innerHTML = "[PENDIENTE DE COMPLETAR]";
     }
   });
-  
+
   // HTML para la ventana de impresión
   const printHTML = `
     <!DOCTYPE html>
@@ -280,10 +282,10 @@ const downloadPDF = () => {
     </body>
     </html>
   `;
-  
+
   printWindow.document.write(printHTML);
   printWindow.document.close();
-  
+
   // Esperar a que se cargue y luego abrir el diálogo de impresión
   printWindow.onload = () => {
     setTimeout(() => {
@@ -295,7 +297,7 @@ const downloadPDF = () => {
 
 // Exponer la función para que pueda ser llamada desde el componente padre
 defineExpose({
-  downloadPDF
+  downloadPDF,
 });
 </script>
 
