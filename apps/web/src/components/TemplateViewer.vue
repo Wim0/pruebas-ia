@@ -32,8 +32,133 @@ onMounted(async () => {
     });
     templateHtml.value = response.data.html;
   } catch (error) {
-    templateHtml.value =
-      '<p class="error">Error al cargar la plantilla. Por favor, recarga la página.</p>';
+    // Plantilla de respaldo con estructura ISO 27001
+    templateHtml.value = `
+      <div class="iso27001-template">
+        <h1>Política de Seguridad de la Información - ISO 27001</h1>
+        
+        <div class="template-section">
+          <h2>1. Introducción</h2>
+          <p>La presente política establece el marco de referencia para la gestión de la seguridad de la información en <span class="fillable-field" data-context="nombre de la organización">[NOMBRE DE LA ORGANIZACIÓN]</span>, en cumplimiento con los requisitos de la norma ISO/IEC 27001:2022.</p>
+          
+          <h3>1.1 Propósito</h3>
+          <div class="fillable-field" data-context="propósito de la política de seguridad">
+            Haga clic aquí para definir el propósito específico de esta política de seguridad para su organización...
+          </div>
+        </div>
+
+        <div class="template-section">
+          <h2>A.5 Políticas de Seguridad</h2>
+          
+          <h3>A.5.1 Políticas para la seguridad de la información</h3>
+          <p><strong>Control:</strong> Se debe definir un conjunto de políticas para la seguridad de la información, aprobado por la dirección, publicado y comunicado a los empleados y partes externas relevantes.</p>
+          
+          <div class="fillable-field" data-context="políticas específicas de seguridad de la información">
+            Describa las políticas específicas de seguridad de la información que implementa su organización...
+          </div>
+
+          <h3>A.5.2 Revisión de las políticas de seguridad</h3>
+          <p><strong>Control:</strong> Las políticas para la seguridad de la información se deben revisar a intervalos planificados o si ocurren cambios significativos.</p>
+          
+          <div class="fillable-field" data-context="proceso de revisión de políticas de seguridad">
+            Defina el proceso y frecuencia de revisión de las políticas de seguridad...
+          </div>
+        </div>
+
+        <div class="template-section">
+          <h2>A.6 Organización de la Seguridad de la Información</h2>
+          
+          <h3>A.6.1 Organización interna</h3>
+          <p><strong>Control:</strong> Se debe establecer un marco de gestión para iniciar y controlar la implementación y operación de la seguridad de la información dentro de la organización.</p>
+          
+          <div class="fillable-field" data-context="estructura organizacional de seguridad">
+            Describa la estructura organizacional responsable de la seguridad de la información...
+          </div>
+
+          <h3>A.6.2 Dispositivos móviles y teletrabajo</h3>
+          <div class="fillable-field" data-context="políticas de dispositivos móviles y teletrabajo">
+            Establezca las políticas y procedimientos para el uso seguro de dispositivos móviles y teletrabajo...
+          </div>
+        </div>
+
+        <div class="template-section">
+          <h2>A.7 Seguridad de Recursos Humanos</h2>
+          
+          <h3>A.7.1 Antes del empleo</h3>
+          <p><strong>Control:</strong> Las verificaciones de antecedentes de todos los candidatos a empleo se deben llevar a cabo de acuerdo con las leyes, reglamentos y ética pertinentes.</p>
+          
+          <div class="fillable-field" data-context="proceso de verificación de antecedentes">
+            Describa el proceso de verificación de antecedentes y evaluación de empleados...
+          </div>
+
+          <h3>A.7.2 Durante el empleo</h3>
+          <div class="fillable-field" data-context="responsabilidades de seguridad durante el empleo">
+            Defina las responsabilidades y procedimientos de seguridad durante la relación laboral...
+          </div>
+
+          <h3>A.7.3 Terminación y cambio de empleo</h3>
+          <div class="fillable-field" data-context="proceso de terminación de empleo">
+            Establezca los procedimientos para la terminación o cambio de empleo, incluyendo devolución de activos...
+          </div>
+        </div>
+
+        <div class="template-section">
+          <h2>A.8 Gestión de Activos</h2>
+          
+          <h3>A.8.1 Responsabilidad por los activos</h3>
+          <p><strong>Control:</strong> Los activos asociados con información e instalaciones de procesamiento de información se deben identificar, y se deben definir e implementar responsabilidades de protección.</p>
+          
+          <div class="fillable-field" data-context="inventario de activos de información">
+            Describa el proceso de inventario y clasificación de activos de información...
+          </div>
+
+          <h3>A.8.2 Clasificación de la información</h3>
+          <div class="fillable-field" data-context="esquema de clasificación de información">
+            Defina el esquema de clasificación de la información y las etiquetas de seguridad...
+          </div>
+
+          <h3>A.8.3 Manejo de medios</h3>
+          <div class="fillable-field" data-context="procedimientos de manejo de medios">
+            Establezca los procedimientos para el manejo seguro de medios de almacenamiento...
+          </div>
+        </div>
+
+        <div class="template-section">
+          <h2>2. Aplicabilidad</h2>
+          <div class="fillable-field" data-context="alcance y aplicabilidad de la política">
+            Defina el alcance y aplicabilidad de esta política dentro de la organización...
+          </div>
+        </div>
+
+        <div class="template-section">
+          <h2>3. Responsabilidades</h2>
+          <div class="fillable-field" data-context="roles y responsabilidades específicas">
+            Detalle los roles y responsabilidades específicas para la implementación de esta política...
+          </div>
+        </div>
+
+        <div class="template-section">
+          <h2>4. Cumplimiento</h2>
+          <div class="fillable-field" data-context="mecanismos de cumplimiento y monitoreo">
+            Describa los mecanismos de cumplimiento, monitoreo y consecuencias por incumplimiento...
+          </div>
+        </div>
+
+        <div class="template-section">
+          <h2>5. Revisión y Actualización</h2>
+          <p>Esta política será revisada anualmente o cuando sea necesario debido a cambios en:</p>
+          <div class="fillable-field" data-context="criterios para revisión de la política">
+            Establezca los criterios específicos que triggearán una revisión de esta política...
+          </div>
+        </div>
+
+        <div class="template-footer">
+          <p><strong>Fecha de aprobación:</strong> <span class="fillable-field" data-context="fecha de aprobación">[FECHA]</span></p>
+          <p><strong>Aprobado por:</strong> <span class="fillable-field" data-context="autoridad que aprueba">[CARGO Y NOMBRE]</span></p>
+          <p><strong>Próxima revisión:</strong> <span class="fillable-field" data-context="fecha de próxima revisión">[FECHA]</span></p>
+        </div>
+      </div>
+    `;
     console.error(error);
   } finally {
     loadingTemplate.value = false;
@@ -85,6 +210,55 @@ const handleFieldClick = async (event) => {
   border-bottom: 2px solid #e0e0e0;
   padding-bottom: 0.5rem;
 }
+
+/* Estilos específicos para la plantilla ISO 27001 */
+.iso27001-template {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+.iso27001-template h1 {
+  text-align: center;
+  color: #2c3e50;
+  border-bottom: 3px solid #3498db;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.iso27001-template h2 {
+  color: #2980b9;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #3498db;
+  padding-left: 1rem;
+}
+
+.iso27001-template h3 {
+  color: #34495e;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.template-section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.template-footer {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background-color: #f1f3f4;
+  border-radius: 8px;
+  border: 2px solid #d1d9e0;
+}
+
 .fillable-field {
   border: 1px dashed #ccc;
   padding: 15px;
@@ -96,20 +270,27 @@ const handleFieldClick = async (event) => {
   transition: all 0.2s ease-in-out;
   color: var(--text-secondary);
   line-height: 1.6;
+  display: inline-block;
+  min-width: 200px;
 }
+
 .fillable-field:hover {
   background-color: #f0f5ff;
   border-color: var(--primary-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .fillable-field.loading {
   cursor: wait;
   background-color: #f0f5ff;
 }
+
 .pulsing-loader {
   animation: pulse 1.5s infinite;
   color: var(--primary-color);
   font-weight: 500;
 }
+
 @keyframes pulse {
   0% {
     opacity: 1;
