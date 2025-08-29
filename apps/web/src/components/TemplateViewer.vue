@@ -18,18 +18,13 @@
  */
 import { ref, onMounted } from "vue";
 import axios from "axios";
-import { useAuth } from "@clerk/vue";
 
 const templateHtml = ref("");
 const loadingTemplate = ref(true);
-const { getToken } = useAuth();
 
 onMounted(async () => {
   try {
-    const token = await getToken();
-    const response = await axios.get("/api/templates/iso27001", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.get("/api/templates/iso27001");
     templateHtml.value = response.data.html;
   } catch (error) {
     // Plantilla de respaldo con estructura ISO 27001
@@ -179,12 +174,12 @@ const handleFieldClick = async (event) => {
   field.classList.add("loading");
 
   try {
-    const token = await getToken();
+    console.log("Enviando petición con contexto:", fieldContext);
     const response = await axios.post(
       "/api/suggestions/generate",
-      { context: fieldContext },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { context: fieldContext }
     );
+    console.log("Respuesta recibida:", response.data);
     // Reemplazamos el contenido y los saltos de línea por <br> para HTML
     field.innerHTML = response.data.suggestion.replace(/\n/g, "<br>");
   } catch (error) {
