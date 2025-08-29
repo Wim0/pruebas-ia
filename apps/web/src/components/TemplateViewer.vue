@@ -189,9 +189,15 @@ const handleFieldClick = async (event) => {
     field.innerHTML = response.data.suggestion.replace(/\n/g, "<br>");
   } catch (error) {
     field.innerHTML = originalText;
-    alert(
-      "Error al generar la sugerencia. Asegúrate de haber subido documentos y sincronizado la Base de Conocimiento en AWS."
-    );
+    console.error("Error completo:", error);
+    console.error("Error response:", error.response);
+    
+    let errorMessage = "Error al generar la sugerencia.";
+    if (error.response) {
+      errorMessage += ` Status: ${error.response.status}. ${error.response.data?.message || ''}`;
+    }
+    
+    alert(errorMessage);
     console.error(error);
   } finally {
     field.dataset.loading = "false";
