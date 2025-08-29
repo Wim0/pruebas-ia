@@ -64,12 +64,14 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import TemplateViewer from "../components/TemplateViewer.vue";
 import { useTemplateProgress } from "../composables/useTemplateProgress.js";
 import { $confirm, $success } from "../composables/useModal.js";
 
 const templateViewerRef = ref(null);
 const { resetAllProgress } = useTemplateProgress();
+const router = useRouter();
 
 // Función para descargar el template como PDF
 const downloadTemplate = () => {
@@ -92,19 +94,17 @@ const resetProgress = async () => {
 
   if (confirmed) {
     // Reiniciar el progreso
-    resetAllProgress();
+    await resetAllProgress();
     
-    // Actualizar visualmente el template
-    if (templateViewerRef.value) {
-      setTimeout(() => {
-        templateViewerRef.value.updateCompletedFieldsVisually();
-      }, 100);
-    }
-    
-    $success("El progreso ha sido reiniciado completamente.", {
+    // Mostrar mensaje de éxito
+    await $success("El progreso ha sido reiniciado completamente.", {
       title: "Progreso Reiniciado",
       confirmText: "Entendido"
     });
+    
+    // Recargar la página para asegurar que todo vuelva al estado original
+    // Usando router.go(0) para mantener la URL actual de /template
+    router.go(0);
   }
 };
 </script>
