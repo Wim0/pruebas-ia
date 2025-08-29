@@ -11,7 +11,7 @@
       <div class="template-header">
         <h2>Política de Seguridad de la Información</h2>
         <div class="template-actions">
-          <button class="btn-secondary">
+          <button class="btn-secondary" @click="handleDownload">
             <svg width="16" height="16" viewBox="0 0 24 24">
               <path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
             </svg>
@@ -29,7 +29,7 @@
       </div>
 
       <div class="template-viewer-wrapper">
-        <TemplateViewer />
+        <TemplateViewer ref="templateViewerRef" />
       </div>
 
       <div class="template-tips">
@@ -55,7 +55,16 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
 import TemplateViewer from "../components/TemplateViewer.vue";
+
+const templateViewerRef = ref(null);
+
+const handleDownload = () => {
+  if (templateViewerRef.value && templateViewerRef.value.downloadPDF) {
+    templateViewerRef.value.downloadPDF();
+  }
+};
 </script>
 
 <style scoped>

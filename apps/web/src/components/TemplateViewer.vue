@@ -199,6 +199,104 @@ const handleFieldClick = async (event) => {
     field.classList.remove("loading");
   }
 };
+
+const downloadPDF = () => {
+  // Crear una nueva ventana con el contenido para impresión
+  const printWindow = window.open('', '_blank');
+  
+  // Obtener el contenido actual del template (sin los elementos interactivos)
+  const templateContent = document.querySelector('.template-content').cloneNode(true);
+  
+  // Remover elementos interactivos y reemplazar con contenido estático
+  const fillableFields = templateContent.querySelectorAll('.fillable-field');
+  fillableFields.forEach(field => {
+    field.style.border = 'none';
+    field.style.backgroundColor = 'transparent';
+    field.style.cursor = 'default';
+    field.classList.remove('fillable-field');
+    
+    // Si el campo está vacío o tiene texto de placeholder, poner contenido por defecto
+    if (field.innerHTML.includes('Haga clic aquí') || field.innerHTML.includes('Describa') || field.innerHTML.includes('Defina') || field.innerHTML.includes('Establezca')) {
+      field.innerHTML = '[PENDIENTE DE COMPLETAR]';
+    }
+  });
+  
+  // HTML para la ventana de impresión
+  const printHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Política de Seguridad ISO 27001</title>
+      <style>
+        body {
+          font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 2rem;
+        }
+        .iso27001-template h1 {
+          text-align: center;
+          color: #2c3e50;
+          border-bottom: 3px solid #3498db;
+          padding-bottom: 1rem;
+          margin-bottom: 2rem;
+        }
+        .iso27001-template h2 {
+          color: #2980b9;
+          margin-top: 2.5rem;
+          margin-bottom: 1rem;
+          border-left: 4px solid #3498db;
+          padding-left: 1rem;
+        }
+        .iso27001-template h3 {
+          color: #34495e;
+          margin-top: 1.5rem;
+          margin-bottom: 0.8rem;
+        }
+        .template-section {
+          margin-bottom: 2rem;
+          padding: 1rem;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+          border: 1px solid #e9ecef;
+        }
+        .template-footer {
+          margin-top: 3rem;
+          padding: 1.5rem;
+          background-color: #f1f3f4;
+          border-radius: 8px;
+          border: 2px solid #d1d9e0;
+        }
+        @media print {
+          body { margin: 0; padding: 1rem; }
+          .template-section { break-inside: avoid; }
+        }
+      </style>
+    </head>
+    <body>
+      ${templateContent.innerHTML}
+    </body>
+    </html>
+  `;
+  
+  printWindow.document.write(printHTML);
+  printWindow.document.close();
+  
+  // Esperar a que se cargue y luego abrir el diálogo de impresión
+  printWindow.onload = () => {
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
+};
+
+// Exponer la función para que pueda ser llamada desde el componente padre
+defineExpose({
+  downloadPDF
+});
 </script>
 
 <style>
