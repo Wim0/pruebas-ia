@@ -11,11 +11,19 @@
       <div class="template-header">
         <h2>Política de Seguridad de la Información</h2>
         <div class="template-actions">
-          <button class="btn-secondary">
+          <button class="btn-secondary" @click="downloadTemplate">
             <svg width="16" height="16" viewBox="0 0 24 24">
               <path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
             </svg>
             Descargar
+          </button>
+          <button class="btn-danger" @click="resetProgress" title="Reinicia todo el progreso">
+            <svg width="16" height="16" viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+            </svg>
+            Reiniciar
           </button>
           <button class="btn-primary">
             <svg width="16" height="16" viewBox="0 0 24 24">
@@ -29,7 +37,7 @@
       </div>
 
       <div class="template-viewer-wrapper">
-        <TemplateViewer />
+        <TemplateViewer ref="templateViewerRef" />
       </div>
 
       <div class="template-tips">
@@ -55,7 +63,36 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
 import TemplateViewer from "../components/TemplateViewer.vue";
+import { useTemplateProgress } from "../composables/useTemplateProgress.js";
+
+const templateViewerRef = ref(null);
+const { resetAllProgress } = useTemplateProgress();
+
+// Función para descargar el template como PDF
+const downloadTemplate = () => {
+  if (templateViewerRef.value) {
+    templateViewerRef.value.downloadPDF();
+  }
+};
+
+// Función para reiniciar todo el progreso
+const resetProgress = () => {
+  if (confirm("¿Estás seguro de que quieres reiniciar todo el progreso? Esta acción no se puede deshacer.")) {
+    // Reiniciar el progreso
+    resetAllProgress();
+    
+    // Actualizar visualmente el template
+    if (templateViewerRef.value) {
+      setTimeout(() => {
+        templateViewerRef.value.updateCompletedFieldsVisually();
+      }, 100);
+    }
+    
+    alert("El progreso ha sido reiniciado completamente.");
+  }
+};
 </script>
 
 <style scoped>
@@ -127,7 +164,8 @@ import TemplateViewer from "../components/TemplateViewer.vue";
 }
 
 .btn-primary,
-.btn-secondary {
+.btn-secondary,
+.btn-danger {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -156,5 +194,15 @@ import TemplateViewer from "../components/TemplateViewer.vue";
 
 .btn-secondary:hover {
   background-color: #f8f9fb;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
 }
 </style>

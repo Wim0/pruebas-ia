@@ -309,6 +309,13 @@ export function useTemplateProgress() {
   // Inicializar al cargar
   loadProgressFromStorage();
 
+  // Función para reiniciar todos los registros de progreso
+  const resetAllProgress = () => {
+    templateProgress.completedFields.clear();
+    localStorage.removeItem("templateProgress");
+    console.log("Progreso del template reiniciado completamente");
+  };
+
   return {
     // Estado
     templateProgress,
@@ -320,6 +327,7 @@ export function useTemplateProgress() {
     isFieldCompleted,
     getSectionProgress,
     updateDocumentsCount,
+    resetAllProgress,
 
     // Computed
     overallProgress,

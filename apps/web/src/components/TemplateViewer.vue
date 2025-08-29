@@ -178,6 +178,11 @@ const updateCompletedFieldsVisually = () => {
       field.style.borderColor = "#28a745";
       field.style.backgroundColor = "#f8fff9";
       field.classList.add("completed");
+    } else {
+      // Limpiar estilos si el campo no está completado
+      field.style.borderColor = "#ccc";
+      field.style.backgroundColor = "#f9fafb";
+      field.classList.remove("completed");
     }
   });
 };
