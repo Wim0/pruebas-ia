@@ -94,6 +94,7 @@ import { ref, computed, onMounted } from "vue";
 import { RouterLink } from "vue-router";
 import DashboardStats from "../components/DashboardStats.vue";
 import ProgressIndicator from "../components/ProgressIndicator.vue";
+import { useTemplateProgress } from "../composables/useTemplateProgress.js";
 
 const { user } = useUser();
 const userFirstName = computed(() => user.value?.firstName || "Usuario");
@@ -102,77 +103,22 @@ const userRole = computed(() => {
   return role.charAt(0).toUpperCase() + role.slice(1);
 });
 
-// Datos de ejemplo para estadísticas
-const documentsUploaded = ref(5);
-const daysRemaining = ref(45);
-const categories = ref([
-  {
-    id: 1,
-    name: "A.5 Políticas de Seguridad",
-    sections: [
-      { id: "5.1.1", name: "Políticas para la seguridad de la información", completed: true },
-      { id: "5.1.2", name: "Revisión de las políticas de seguridad", completed: false },
-    ],
-  },
-  {
-    id: 2,
-    name: "A.6 Organización de la Seguridad",
-    sections: [
-      { id: "6.1.1", name: "Roles y responsabilidades", completed: true },
-      { id: "6.1.2", name: "Separación de tareas", completed: true },
-      { id: "6.1.3", name: "Contacto con autoridades", completed: false },
-      { id: "6.1.4", name: "Contacto con grupos de interés", completed: false },
-    ],
-  },
-  {
-    id: 3,
-    name: "A.7 Seguridad de RRHH",
-    sections: [
-      { id: "7.1.1", name: "Investigación de antecedentes", completed: true },
-      { id: "7.1.2", name: "Términos y condiciones de empleo", completed: true },
-      { id: "7.2.1", name: "Responsabilidades de gestión", completed: false },
-      { id: "7.2.2", name: "Concienciación y capacitación", completed: false },
-    ],
-  },
-  {
-    id: 4,
-    name: "A.8 Gestión de Activos",
-    sections: [
-      { id: "8.1.1", name: "Inventario de activos", completed: true },
-      { id: "8.1.2", name: "Propiedad de los activos", completed: true },
-      { id: "8.1.3", name: "Uso aceptable de activos", completed: false },
-      { id: "8.1.4", name: "Devolución de activos", completed: false },
-    ],
-  },
-]);
+// Usar el composable de progreso para datos reales
+const {
+  documentsUploaded,
+  overallProgress,
+  categories,
+  pendingSections,
+  daysRemaining,
+  updateDocumentsCount,
+} = useTemplateProgress();
 
-// Calcular métricas derivadas
-const overallCompletion = computed(() => {
-  let totalSections = 0;
-  let completedSections = 0;
+// Calcular porcentaje de completado usando datos reales
+const overallCompletion = computed(() => overallProgress.value.percentage);
 
-  categories.value.forEach((category) => {
-    totalSections += category.sections.length;
-    completedSections += category.sections.filter((section) => section.completed).length;
-  });
-
-  return Math.round((completedSections / totalSections) * 100);
-});
-
-const pendingSections = computed(() => {
-  let totalSections = 0;
-  let completedSections = 0;
-
-  categories.value.forEach((category) => {
-    totalSections += category.sections.length;
-    completedSections += category.sections.filter((section) => section.completed).length;
-  });
-
-  return totalSections - completedSections;
-});
-
-onMounted(() => {
-  // Aquí podrías cargar datos reales desde tu API
+onMounted(async () => {
+  // Cargar el número real de documentos subidos
+  await updateDocumentsCount();
 });
 </script>
 
