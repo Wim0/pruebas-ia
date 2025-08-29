@@ -3,9 +3,10 @@
  * ARCHIVO: apps/web/src/composables/useTemplateProgress.js
  * ----------------------------------------------------------------
  * Propósito: Manejar el progreso del template ISO 27001 de forma
- * reactiva y sincronizada entre componentes.
+ * reactiva y sincronizada entre componentes con persistencia en base de datos.
  */
 import { ref, computed, reactive } from "vue";
+import axios from "axios";
 
 // Estado global reactivo del progreso del template
 const templateProgress = reactive({
@@ -57,17 +58,63 @@ const templateProgress = reactive({
 const documentsUploaded = ref(0);
 
 export function useTemplateProgress() {
+  // Cargar progreso desde la base de datos
+  const loadProgressFromAPI = async () => {
+    try {
+      const response = await axios.get("/api/templates/fields");
+      if (response.data && response.data.success && response.data.data) {
+        // Limpiar el conjunto actual
+        templateProgress.completedFields.clear();
+        // Agregar los campos completados desde la base de datos
+        response.data.data.forEach(field => {
+          if (field.isCompleted) {
+            templateProgress.completedFields.add(field.fieldContext);
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error loading progress from API:", error);
+      // Fallback a localStorage si la API falla
+      loadProgressFromStorage();
+    }
+  };
+
   // Marcar un campo como completado
-  const markFieldCompleted = (fieldContext) => {
+  const markFieldCompleted = async (fieldContext) => {
     templateProgress.completedFields.add(fieldContext);
-    // Guardar en localStorage para persistencia
-    saveProgressToStorage();
+    
+    // Guardar en la base de datos
+    try {
+      await axios.post("/api/templates/fields", {
+        fieldContext,
+        fieldContent: "", // Se llenará cuando se genere contenido
+        templateType: "iso27001",
+        isCompleted: true
+      });
+    } catch (error) {
+      console.error("Error saving progress to API:", error);
+      // Fallback a localStorage
+      saveProgressToStorage();
+    }
   };
 
   // Desmarcar un campo como completado
-  const markFieldIncomplete = (fieldContext) => {
+  const markFieldIncomplete = async (fieldContext) => {
     templateProgress.completedFields.delete(fieldContext);
-    saveProgressToStorage();
+    
+    // Actualizar en la base de datos
+    try {
+      const response = await axios.get(`/api/templates/fields/context/${encodeURIComponent(fieldContext)}`);
+      if (response.data && response.data.data) {
+        await axios.put(`/api/templates/fields/${response.data.data.id}`, {
+          isCompleted: false
+        });
+      }
+    } catch (error) {
+      console.error("Error updating progress in API:", error);
+      // Fallback a localStorage
+      saveProgressToStorage();
+    }
   };
 
   // Verificar si un campo está completado
@@ -306,14 +353,25 @@ export function useTemplateProgress() {
     }
   };
 
-  // Inicializar al cargar
-  loadProgressFromStorage();
+  // Inicializar al cargar - ahora carga desde la API
+  loadProgressFromAPI();
 
   // Función para reiniciar todos los registros de progreso
-  const resetAllProgress = () => {
-    templateProgress.completedFields.clear();
-    localStorage.removeItem("templateProgress");
-    console.log("Progreso del template reiniciado completamente");
+  const resetAllProgress = async () => {
+    try {
+      // Limpiar en la base de datos
+      await axios.delete("/api/templates/fields");
+      // Limpiar localmente
+      templateProgress.completedFields.clear();
+      // Limpiar localStorage como backup
+      localStorage.removeItem("templateProgress");
+      console.log("Progreso del template reiniciado completamente");
+    } catch (error) {
+      console.error("Error resetting progress in API:", error);
+      // Fallback a solo limpiar localStorage
+      templateProgress.completedFields.clear();
+      localStorage.removeItem("templateProgress");
+    }
   };
 
   return {
@@ -328,6 +386,7 @@ export function useTemplateProgress() {
     getSectionProgress,
     updateDocumentsCount,
     resetAllProgress,
+    loadProgressFromAPI,
 
     // Computed
     overallProgress,

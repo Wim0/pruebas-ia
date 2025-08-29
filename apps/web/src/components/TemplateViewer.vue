@@ -24,7 +24,7 @@ const templateHtml = ref("");
 const loadingTemplate = ref(true);
 
 // Usar el composable de progreso
-const { markFieldCompleted, isFieldCompleted } = useTemplateProgress();
+const { markFieldCompleted, isFieldCompleted, loadProgressFromAPI } = useTemplateProgress();
 
 onMounted(async () => {
   try {
@@ -162,8 +162,9 @@ onMounted(async () => {
   } finally {
     loadingTemplate.value = false;
 
-    // Aplicar estilos a campos ya completados después de cargar el template
-    setTimeout(() => {
+    // Cargar progreso desde la API y aplicar estilos después de cargar el template
+    setTimeout(async () => {
+      await loadProgressFromAPI();
       updateCompletedFieldsVisually();
     }, 100);
   }

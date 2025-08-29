@@ -2,19 +2,26 @@
  * ----------------------------------------------------------------
  * ARCHIVO: apps/api/src/suggestions/suggestions.service.ts
  * ----------------------------------------------------------------
- * Propósito: Contiene la lógica de negocio. Construye el prompt
- * y llama al servicio de AWS para obtener la respuesta de la IA.
+ * Propósito: Contiene la lógica de negocio. Construye el prompt,
+ * llama al servicio de AWS y guarda el resultado en la base de datos.
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { AwsService } from '../aws/aws.service';
+import { TemplatesService } from '../templates/templates.service';
 
 @Injectable()
 export class SuggestionsService {
   private readonly logger = new Logger(SuggestionsService.name);
 
-  constructor(private readonly awsService: AwsService) {}
+  constructor(
+    private readonly awsService: AwsService,
+    private readonly templatesService: TemplatesService,
+  ) {}
 
-  async generateSuggestion(userContext: string): Promise<string> {
+  async generateSuggestion(
+    userContext: string,
+    userId?: string,
+  ): Promise<string> {
     this.logger.log(`Generating suggestion for context: "${userContext}"`);
 
     const promptTemplate = `
@@ -33,6 +40,23 @@ INSTRUCCIONES:
 
 RESPONDE ÚNICAMENTE CON EL CONTENIDO SOLICITADO:`;
 
-    return this.awsService.retrieveAndGenerate(promptTemplate);
+    const suggestion = await this.awsService.retrieveAndGenerate(promptTemplate);
+    
+    // Guardar automáticamente el campo en la base de datos
+    try {
+      await this.templatesService.saveTemplateField({
+        fieldContext: userContext,
+        fieldContent: suggestion,
+        userId: userId,
+        templateType: 'iso27001',
+        isCompleted: true,
+      });
+      this.logger.log(`Field saved to database for context: "${userContext}"`);
+    } catch (error) {
+      this.logger.error(`Error saving field to database: ${error}`);
+      // No fallar la respuesta si el guardado falla
+    }
+
+    return suggestion;
   }
 }
