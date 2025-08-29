@@ -191,12 +191,12 @@ const handleFieldClick = async (event) => {
     field.innerHTML = originalText;
     console.error("Error completo:", error);
     console.error("Error response:", error.response);
-    
+
     let errorMessage = "Error al generar la sugerencia.";
     if (error.response) {
-      errorMessage += ` Status: ${error.response.status}. ${error.response.data?.message || ''}`;
+      errorMessage += ` Status: ${error.response.status}. ${error.response.data?.message || ""}`;
     }
-    
+
     alert(errorMessage);
     console.error(error);
   } finally {

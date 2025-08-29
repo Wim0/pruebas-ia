@@ -13,9 +13,9 @@ export class TestBedrockController {
 Eres un asistente experto en ISO 27001. 
 Responde brevemente: ¿Cuál es el propósito de una política de seguridad de la información?
 `;
-      
+
       const response = await this.awsService.retrieveAndGenerate(prompt);
-      
+
       return {
         success: true,
         message: 'Bedrock está funcionando correctamente',
