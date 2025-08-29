@@ -75,6 +75,7 @@ import { ref, onMounted } from "vue";
 import FileUpload from "../components/FileUpload.vue";
 import axios from "axios";
 import { useTemplateProgress } from "../composables/useTemplateProgress.js";
+import { $confirm, $error } from "../composables/useModal.js";
 
 const documents = ref([]);
 const loading = ref(true);
@@ -108,7 +109,17 @@ const onUploadSuccess = (newFile) => {
 
 // Función para eliminar un documento
 const deleteDocument = async (id) => {
-  if (!confirm("¿Estás seguro de querer eliminar este documento?")) return;
+  const confirmed = await $confirm(
+    "¿Estás seguro de querer eliminar este documento?",
+    {
+      title: "Confirmar Eliminación",
+      type: "warning",
+      confirmText: "Eliminar",
+      cancelText: "Cancelar"
+    }
+  );
+
+  if (!confirmed) return;
 
   deleting.value = id;
   try {
@@ -118,7 +129,10 @@ const deleteDocument = async (id) => {
     await updateDocumentsCount();
   } catch (error) {
     console.error("Error al eliminar documento:", error);
-    alert("Error al eliminar el documento.");
+    $error("Error al eliminar el documento.", {
+      title: "Error de Eliminación",
+      confirmText: "Entendido"
+    });
   } finally {
     deleting.value = null;
   }

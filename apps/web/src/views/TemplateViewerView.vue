@@ -64,11 +64,14 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import TemplateViewer from "../components/TemplateViewer.vue";
 import { useTemplateProgress } from "../composables/useTemplateProgress.js";
+import { $confirm, $success } from "../composables/useModal.js";
 
 const templateViewerRef = ref(null);
 const { resetAllProgress } = useTemplateProgress();
+const router = useRouter();
 
 // Función para descargar el template como PDF
 const downloadTemplate = () => {
@@ -78,19 +81,30 @@ const downloadTemplate = () => {
 };
 
 // Función para reiniciar todo el progreso
-const resetProgress = () => {
-  if (confirm("¿Estás seguro de que quieres reiniciar todo el progreso? Esta acción no se puede deshacer.")) {
-    // Reiniciar el progreso
-    resetAllProgress();
-    
-    // Actualizar visualmente el template
-    if (templateViewerRef.value) {
-      setTimeout(() => {
-        templateViewerRef.value.updateCompletedFieldsVisually();
-      }, 100);
+const resetProgress = async () => {
+  const confirmed = await $confirm(
+    "¿Estás seguro de que quieres reiniciar todo el progreso? Esta acción no se puede deshacer.",
+    {
+      title: "Confirmar Reinicio",
+      type: "warning",
+      confirmText: "Sí, reiniciar",
+      cancelText: "Cancelar"
     }
+  );
+
+  if (confirmed) {
+    // Reiniciar el progreso
+    await resetAllProgress();
     
-    alert("El progreso ha sido reiniciado completamente.");
+    // Mostrar mensaje de éxito
+    await $success("El progreso ha sido reiniciado completamente.", {
+      title: "Progreso Reiniciado",
+      confirmText: "Entendido"
+    });
+    
+    // Recargar la página para asegurar que todo vuelva al estado original
+    // Usando router.go(0) para mantener la URL actual de /template
+    router.go(0);
   }
 };
 </script>
