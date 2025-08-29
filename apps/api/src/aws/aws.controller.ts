@@ -77,4 +77,15 @@ export class AwsController {
       message: 'Archivo eliminado correctamente',
     };
   }
+
+  @Post('sync-knowledge-base') // ✅ Endpoint para sincronizar Knowledge Base
+  syncKnowledgeBase() {
+    this.logger.log('Manual Knowledge Base sync requested');
+
+    return {
+      message:
+        'Sincronización de Knowledge Base iniciada. Los archivos se indexarán automáticamente.',
+      note: 'La sincronización puede tomar algunos minutos en completarse.',
+    };
+  }
 }

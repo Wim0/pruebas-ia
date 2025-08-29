@@ -11,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AwsModule } from './aws/aws.module';
 import { SuggestionsModule } from './suggestions/suggestions.module';
 import { TemplatesModule } from './templates/templates.module';
+import { TestBedrockController } from './test-bedrock.controller';
 
 @Module({
   imports: [
@@ -20,5 +21,6 @@ import { TemplatesModule } from './templates/templates.module';
     SuggestionsModule,
     TemplatesModule,
   ],
+  controllers: [TestBedrockController],
 })
 export class AppModule {}

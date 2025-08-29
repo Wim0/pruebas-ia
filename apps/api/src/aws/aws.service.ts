@@ -172,7 +172,19 @@ export class AwsService {
       'BEDROCK_KNOWLEDGE_BASE_ID',
     );
     const modelArn = this.configService.get<string>('BEDROCK_MODEL_ARN');
-    this.logger.log(`Querying Knowledge Base ${knowledgeBaseId}`);
+
+    this.logger.log(
+      `Querying Knowledge Base ${knowledgeBaseId} with model ${modelArn}`,
+    );
+    this.logger.log(`Prompt length: ${prompt.length} characters`);
+
+    if (!knowledgeBaseId) {
+      throw new Error('BEDROCK_KNOWLEDGE_BASE_ID not configured');
+    }
+
+    if (!modelArn) {
+      throw new Error('BEDROCK_MODEL_ARN not configured');
+    }
 
     const command = new RetrieveAndGenerateCommand({
       input: { text: prompt },
@@ -187,13 +199,45 @@ export class AwsService {
 
     try {
       const response = await this.bedrockAgentClient.send(command);
-      return (
-        response.output?.text ||
-        'No se pudo generar una sugerencia desde Bedrock.'
+
+      this.logger.log(
+        `Bedrock response received. Output length: ${response.output?.text?.length || 0} characters`,
       );
-    } catch (error) {
-      this.logger.error('Error querying Bedrock Knowledge Base:', error);
-      throw new Error('Failed to retrieve and generate from Bedrock.');
+
+      if (!response.output?.text) {
+        this.logger.warn('Bedrock returned empty response');
+        return 'No se encontró información relevante en la base de conocimiento. Por favor, asegúrate de haber subido documentos de referencia y sincronizado la base de conocimiento.';
+      }
+
+      return response.output.text;
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      const errorInfo = error as Record<string, any>;
+
+      this.logger.error('Error querying Bedrock Knowledge Base:', {
+        errorMessage,
+        errorName: String(errorInfo?.name || 'Unknown'),
+        knowledgeBaseId,
+        modelArn,
+      });
+
+      // Proporcionar mensajes de error más específicos
+      if (errorInfo?.name === 'ValidationException') {
+        throw new Error(
+          'Error de configuración en Bedrock. Verifica el Knowledge Base ID y Model ARN.',
+        );
+      } else if (errorInfo?.name === 'AccessDeniedException') {
+        throw new Error(
+          'Permisos insuficientes para acceder a Bedrock. Verifica las credenciales de AWS.',
+        );
+      } else if (errorInfo?.name === 'ResourceNotFoundException') {
+        throw new Error(
+          'Knowledge Base no encontrado. Verifica que el Knowledge Base ID sea correcto.',
+        );
+      }
+
+      throw new Error(`Error al consultar Bedrock: ${errorMessage}`);
     }
   }
 }
